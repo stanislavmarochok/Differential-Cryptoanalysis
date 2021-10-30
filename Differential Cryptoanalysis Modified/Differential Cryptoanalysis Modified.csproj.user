@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Compile Update="DiferencialnaKryptoanalyza\Components\SBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="DiferencialnaKryptoanalyza\Components\Spn.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="DiferencialnaKryptoanalyza\Help.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="DiferencialnaKryptoanalyza\Main.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="DiferencialnaKryptoanalyza\Result.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="DiferencialnaKryptoanalyza\Settings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

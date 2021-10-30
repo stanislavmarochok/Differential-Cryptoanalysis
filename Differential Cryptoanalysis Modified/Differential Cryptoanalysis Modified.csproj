@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <RootNamespace>Differential_Cryptoanalysis_Modified</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspose.Cells" Version="21.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Chart2">
+      <HintPath>Chart2.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

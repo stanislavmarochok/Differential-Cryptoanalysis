@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "rslW53qbVQFAR0E6WN2tzW0DSsMJ/HA3IWC54gP9vc4PakbWpx6i5r62d6T4XJQgkdxTqLJRQBIDPm3zx0aNzA==",
+  "success": true,
+  "projectFilePath": "D:\\Other\\Study\\Ing\\3 semester\\I-NKS\\zadanie-06\\mod differential cryptoanalysis\\Differential Cryptoanalysis Modified\\Differential Cryptoanalysis Modified\\Differential Cryptoanalysis Modified.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\sssss\\.nuget\\packages\\aspose.cells\\21.10.0\\aspose.cells.21.10.0.nupkg.sha512",
+    "C:\\Users\\sssss\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
+    "C:\\Users\\sssss\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
+    "C:\\Users\\sssss\\.nuget\\packages\\system.drawing.common\\4.7.0\\system.drawing.common.4.7.0.nupkg.sha512",
+    "C:\\Users\\sssss\\.nuget\\packages\\system.text.encoding.codepages\\4.7.0\\system.text.encoding.codepages.4.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}
