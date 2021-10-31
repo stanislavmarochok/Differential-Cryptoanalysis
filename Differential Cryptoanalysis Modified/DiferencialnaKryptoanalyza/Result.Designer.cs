@@ -58,10 +58,62 @@ namespace DiferencialnaKryptoanalyza
             this.graphValueY = new int[16];
             if (this.spn.ValidateTrail() != null)
                 return;
-            stopwatch.Start();
-            int[] numArray = this.spn.Attack(this.spn.RunTestCount == 0 ? ((int)(1.0 / this.spn.Probability) + 1) * 10 : this.spn.RunTestCount);
-            stopwatch.Stop();
-            this.SaveResultsToExcel(numArray);
+
+            List<int> tests = new List<int>();
+            for (int i = 1; ; i++)
+            {
+                if (i * 50 < this.spn.RunTestCount)
+                    tests.Add(i * 50);
+                else
+                    break;
+            }
+            tests.Add(this.spn.RunTestCount);
+
+            int[] numArray = null;
+            var book = new Workbook();
+            Worksheet keys_sheet = book.Worksheets.Add("Keys");
+            Worksheet stats_sheet = book.Worksheets.Add("Stats");
+
+            var key = this.spn.Key;
+            bool[] active_sboxes = { 
+                this.spn.DiffOutput >> 12 != 0, 
+                ((this.spn.DiffOutput & (ushort)3840) >> 8) != 0, 
+                ((this.spn.DiffOutput & (ushort)240)  >> 4) != 0,
+                ( this.spn.DiffOutput & (ushort)15) != 0,
+            };
+
+            int right_subkey = 0;
+            int right_subkey_length = 0;
+            for (int i = 0; i < active_sboxes.Length; i++)
+                if (active_sboxes[i])
+                {
+                    right_subkey += (int)this.spn.Key & (ushort)((ushort)15 << (12 - i * 4));
+                    right_subkey_length++;
+                }
+
+            for (int i = active_sboxes.Length - 1; i >= 0; i--)
+            {
+                if (!active_sboxes[i])
+                    right_subkey >>= 4;
+                else
+                    break;
+            }
+
+            int inverse_right_subkey = this.GetNegativeKey(right_subkey, right_subkey_length);
+
+            for (int i = 0; i < tests.Count; i++)
+            {
+                stopwatch.Start();
+                numArray = this.spn.Attack(this.spn.RunTestCount == 0 ? ((int)(1.0 / this.spn.Probability) + 1) * 10 : tests[i]);
+                stopwatch.Stop();
+                this.SaveKeysToExcel(keys_sheet, numArray, tests[i], i);
+                this.SaveStatsToExcel(stats_sheet, tests[i], i, stopwatch, right_subkey, inverse_right_subkey, numArray);
+            }
+
+            keys_sheet.AutoFitColumns();
+            stats_sheet.AutoFitColumns();
+            book.Save("results.xls");
+            
             for (int index1 = 0; index1 < 16; ++index1)
             {
                 int num = -1;
@@ -96,31 +148,69 @@ namespace DiferencialnaKryptoanalyza
             this.tbAtackTime.Text = stopwatch.Elapsed.TotalMilliseconds.ToString() + " ms";
         }
 
-        private void SaveResultsToExcel(int[] arr)
+        private void SaveKeysToExcel(Worksheet sheet, int[] arr, int n, int i)
         {
-            var book = new Workbook(); 
-            Worksheet sheet = book.Worksheets[0]; 
             Cells cells = sheet.Cells; 
 
-            cells[0, 0].PutValue("Key");
-            cells[0, 1].PutValue("Pairs");
+            cells[0, i * 3].PutValue("N");
+            cells[0, (i * 3) + 1].PutValue(n.ToString());
+
+            cells[1, i * 3].PutValue("Key");
+            cells[1, (i * 3) + 1].PutValue("Pairs");
 
             List<Tuple<int, int>> sorted_list = new List<Tuple<int, int>>();
-            for (int i = 0; i < arr.Length; i++)
-                sorted_list.Add(new Tuple<int, int>(i, arr[i]));
+            for (int j = 0; j < arr.Length; j++)
+                sorted_list.Add(new Tuple<int, int>(j, arr[j]));
 
             sorted_list.Sort((x, y) => {
                 int result = y.Item2.CompareTo(x.Item2);
                 return result == 0 ? x.Item1.CompareTo(y.Item1) : result;
             });
 
-            for (int i = 0; i < sorted_list.Count; i++)
+            for (int j = 0; j < sorted_list.Count; j++)
             {
-                cells[i + 1, 0].PutValue(sorted_list[i].Item1.ToString("X"));
-                cells[i + 1, 1].PutValue(sorted_list[i].Item2);
+                cells[j + 2, i * 3].PutValue(sorted_list[j].Item1.ToString("X"));
+                cells[j + 2, (i * 3) + 1].PutValue(sorted_list[j].Item2);
+            }
+        }
+
+        private void SaveStatsToExcel(Worksheet sheet, int n, int i, Stopwatch stopwatch, int right_subkey, int inverse_right_subkey, int [] numArray)
+        {
+            Cells cells = sheet.Cells;
+
+            if (i == 0)
+            {
+                cells[0, 0].PutValue("Run test count");
+                cells[1, 0].PutValue("Right pair count");
+                cells[2, 0].PutValue("Diff input");
+                cells[3, 0].PutValue("Diff output");
+                cells[4, 0].PutValue("Potencial SubKey");
+                cells[5, 0].PutValue("Probability SubKey SPN");
+                cells[6, 0].PutValue("Probability SubKey Computed");
+                cells[7, 0].PutValue("Attack time");
+
+                cells[9,  0].PutValue(string.Format("Right pairs for right key {0:X4}", right_subkey));
+                cells[10, 0].PutValue(string.Format("Right pairs for negative key {0:X4}", inverse_right_subkey));
             }
 
-            book.Save("results.xls");
+            cells[0, i + 1].PutValue(n.ToString());
+            cells[1, i + 1].PutValue(this.spn.RightPairCount.ToString());
+            cells[2, i + 1].PutValue(string.Format("{0:X4}", (object)this.spn.DiffInput));
+            cells[3, i + 1].PutValue(string.Format("{0:X4}", (object)this.spn.DiffOutput));
+            cells[4, i + 1].PutValue(string.Format("{0:X4}", (object)this.PotencialSubkeyFormated(Convert.ToUInt16(this.graphValueX[0], 16))));
+            cells[5, i + 1].PutValue(string.Format("{0:E4}", (object)this.spn.Probability));
+            cells[6, i + 1].PutValue(string.Format("{0:E4}", (object)((double)this.graphValueY[0] / (this.spn.RunTestCount == 0 ? (double)(((int)(1.0 / this.spn.Probability) + 1) * 10) : (double)this.spn.RunTestCount))));
+            cells[7, i + 1].PutValue(stopwatch.Elapsed.TotalMilliseconds.ToString() + " ms");
+
+            cells[9, i + 1].PutValue(numArray[right_subkey]);
+            cells[10, i + 1].PutValue(numArray[inverse_right_subkey]);
+        }
+
+        private int GetNegativeKey(int key, int length)
+        {
+            ushort neg_key = (ushort)~key;
+            neg_key &= (ushort)((1 << (length * 4)) - 1);
+            return neg_key;
         }
 
         private void Result_Resize(object sender, EventArgs e) { } //this.DrawGraph(this.graphValueX, this.graphValueY);
